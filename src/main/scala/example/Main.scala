@@ -5,6 +5,7 @@ import cats.implicits._
 import com.twitter.finagle.{Http => FHttp}
 import com.twitter.util.Await
 import org.http4s._
+import org.http4s.armeria.server.ArmeriaServerBuilder
 import org.http4s.implicits._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -70,4 +71,13 @@ object FinagleTestServer extends IOApp {
     val server = IO(FHttp.server.serve(":8080", Finagle.mkService(Main.app)))
     server.map(Await.ready(_)) >> IO.never
   }
+}
+
+object ArmeriaTestServer extends IOApp {
+  override def run(args: List[String]): IO[ExitCode] =
+    ArmeriaServerBuilder[IO]
+      .bindHttp(8080)
+      .withHttpApp("/", Main.app)
+      .resource
+      .use(_ => IO.never)
 }
